@@ -1,14 +1,15 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Dumbbell, Apple, TrendingUp, Calendar } from 'lucide-react';
+import { Dumbbell, Apple, TrendingUp } from 'lucide-react';
+import { WeeklyWorkoutView } from '@/components/client/WeeklyWorkoutView';
 
 const ClientDashboard = () => {
   const [currentWeight, setCurrentWeight] = useState(70);
+  const [currentWeek, setCurrentWeek] = useState(2);
   
   const weeklyWorkout = {
     week: 1,
@@ -100,35 +101,26 @@ const ClientDashboard = () => {
 
           {/* Workout Tab */}
           <TabsContent value="workout" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Bài tập tuần {weeklyWorkout.week}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {weeklyWorkout.exercises.map((exercise, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{exercise.name}</h4>
-                        <p className="text-sm text-gray-600">
-                          {exercise.sets} sets × {exercise.reps} reps
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{exercise.weight}</p>
-                        <p className="text-sm text-gray-600">Volume: {exercise.volume}</p>
-                      </div>
-                      <Button variant="outline" size="sm" className="ml-4">
-                        Hoàn thành
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex justify-between items-center">
+              <div className="flex gap-2">
+                <Button 
+                  variant={currentWeek === 1 ? "default" : "outline"} 
+                  onClick={() => setCurrentWeek(1)}
+                  size="sm"
+                >
+                  Tuần 1
+                </Button>
+                <Button 
+                  variant={currentWeek === 2 ? "default" : "outline"} 
+                  onClick={() => setCurrentWeek(2)}
+                  size="sm"
+                >
+                  Tuần 2
+                </Button>
+              </div>
+            </div>
+            
+            <WeeklyWorkoutView currentWeek={currentWeek} />
           </TabsContent>
 
           {/* Meals Tab */}
