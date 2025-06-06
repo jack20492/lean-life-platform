@@ -1,0 +1,200 @@
+
+import React, { useState } from 'react';
+import { Header } from '@/components/Header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, FileText, Dumbbell, Apple, Plus } from 'lucide-react';
+import { CreateAccountModal } from '@/components/admin/CreateAccountModal';
+import { CreatePostModal } from '@/components/admin/CreatePostModal';
+import { AssignWorkoutModal } from '@/components/admin/AssignWorkoutModal';
+import { CreateMealPlanModal } from '@/components/admin/CreateMealPlanModal';
+
+const AdminDashboard = () => {
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  const stats = [
+    { title: 'Tổng khách hàng', value: '24', icon: Users, color: 'text-blue-600' },
+    { title: 'Bài viết', value: '12', icon: FileText, color: 'text-green-600' },
+    { title: 'Bài tập active', value: '36', icon: Dumbbell, color: 'text-purple-600' },
+    { title: 'Meal plans', value: '18', icon: Apple, color: 'text-orange-600' }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">Quản lý khách hàng và nội dung</p>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <Card key={index}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
+                    <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
+                  </div>
+                  <stat.icon className={`w-8 h-8 ${stat.color}`} />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="accounts" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="accounts">Tài khoản</TabsTrigger>
+            <TabsTrigger value="posts">Bài viết</TabsTrigger>
+            <TabsTrigger value="workouts">Bài tập</TabsTrigger>
+            <TabsTrigger value="meals">Meal Plans</TabsTrigger>
+          </TabsList>
+
+          {/* Accounts Tab */}
+          <TabsContent value="accounts" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Quản lý tài khoản</h2>
+              <Button 
+                onClick={() => setActiveModal('create-account')}
+                className="bg-fitness-primary hover:bg-fitness-secondary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Tạo tài khoản
+              </Button>
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Nguyễn Văn A</h4>
+                      <p className="text-sm text-gray-600">client@example.com - Khách hàng</p>
+                    </div>
+                    <Button variant="outline" size="sm">Chỉnh sửa</Button>
+                  </div>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Admin PT</h4>
+                      <p className="text-sm text-gray-600">admin@fitness.com - Admin</p>
+                    </div>
+                    <Button variant="outline" size="sm">Chỉnh sửa</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Posts Tab */}
+          <TabsContent value="posts" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Quản lý bài viết</h2>
+              <Button 
+                onClick={() => setActiveModal('create-post')}
+                className="bg-fitness-primary hover:bg-fitness-secondary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Tạo bài viết
+              </Button>
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">5 bài tập ngực hiệu quả nhất</h4>
+                      <p className="text-sm text-gray-600">Đăng ngày 15/12/2024</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">Sửa</Button>
+                      <Button variant="outline" size="sm">Xóa</Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Workouts Tab */}
+          <TabsContent value="workouts" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Assign bài tập</h2>
+              <Button 
+                onClick={() => setActiveModal('assign-workout')}
+                className="bg-fitness-primary hover:bg-fitness-secondary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Assign bài tập
+              </Button>
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Chương trình ngực - Nguyễn Văn A</h4>
+                      <p className="text-sm text-gray-600">Tuần 1 - 5 ngày/tuần</p>
+                    </div>
+                    <Button variant="outline" size="sm">Xem chi tiết</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Meal Plans Tab */}
+          <TabsContent value="meals" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Meal Plans</h2>
+              <Button 
+                onClick={() => setActiveModal('create-meal-plan')}
+                className="bg-fitness-primary hover:bg-fitness-secondary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Tạo meal plan
+              </Button>
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Meal plan giảm cân - Nguyễn Văn A</h4>
+                      <p className="text-sm text-gray-600">1800 calories/ngày</p>
+                    </div>
+                    <Button variant="outline" size="sm">Xem chi tiết</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Modals */}
+      {activeModal === 'create-account' && (
+        <CreateAccountModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'create-post' && (
+        <CreatePostModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'assign-workout' && (
+        <AssignWorkoutModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'create-meal-plan' && (
+        <CreateMealPlanModal onClose={() => setActiveModal(null)} />
+      )}
+    </div>
+  );
+};
+
+export default AdminDashboard;
