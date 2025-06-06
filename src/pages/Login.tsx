@@ -116,13 +116,6 @@ const Login = () => {
                   </Link>
                 </p>
               </div>
-
-              <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">Tài khoản demo:</p>
-                <p className="text-xs text-gray-500">
-                  Admin: admin@fitness.com / admin123
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>
