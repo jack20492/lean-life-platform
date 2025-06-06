@@ -6,9 +6,21 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { Plus, Trash2, Upload } from 'lucide-react';
 
 interface HomepageContentModalProps {
   onClose: () => void;
+}
+
+interface Testimonial {
+  name: string;
+  content: string;
+  image?: string;
+}
+
+interface Video {
+  title: string;
+  videoId: string;
 }
 
 export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
@@ -25,22 +37,25 @@ export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
     successRate: '95%'
   });
 
-  const [testimonials, setTestimonials] = useState([
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([
     {
       name: 'Nguyễn Văn A',
-      content: 'Đã giảm được 15kg trong 3 tháng với chương trình tập luyện khoa học!'
+      content: 'Đã giảm được 15kg trong 3 tháng với chương trình tập luyện khoa học!',
+      image: '/placeholder.svg'
     },
     {
       name: 'Trần Thị B',
-      content: 'PT rất tận tâm, meal plan cực kỳ hiệu quả. Cảm ơn coach!'
+      content: 'PT rất tận tâm, meal plan cực kỳ hiệu quả. Cảm ơn coach!',
+      image: '/placeholder.svg'
     },
     {
       name: 'Lê Văn C',
-      content: 'Tăng cân vào cơ thành công sau 6 tháng. Highly recommended!'
+      content: 'Tăng cân vào cơ thành công sau 6 tháng. Highly recommended!',
+      image: '/placeholder.svg'
     }
   ]);
 
-  const [videos, setVideos] = useState([
+  const [videos, setVideos] = useState<Video[]>([
     {
       title: 'Bài tập ngực cho người mới bắt đầu',
       videoId: 'dQw4w9WgXcQ'
@@ -72,10 +87,44 @@ export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
     setTestimonials(updated);
   };
 
+  const addTestimonial = () => {
+    setTestimonials([...testimonials, {
+      name: '',
+      content: '',
+      image: '/placeholder.svg'
+    }]);
+  };
+
+  const removeTestimonial = (index: number) => {
+    setTestimonials(testimonials.filter((_, i) => i !== index));
+  };
+
+  const handleImageUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateTestimonial(index, 'image', e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const updateVideo = (index: number, field: string, value: string) => {
     const updated = [...videos];
     updated[index] = { ...updated[index], [field]: value };
     setVideos(updated);
+  };
+
+  const addVideo = () => {
+    setVideos([...videos, {
+      title: '',
+      videoId: ''
+    }]);
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos(videos.filter((_, i) => i !== index));
   };
 
   return (
@@ -160,34 +209,104 @@ export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
           </TabsContent>
 
           <TabsContent value="testimonials" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Phản hồi khách hàng</h3>
+              <Button onClick={addTestimonial} size="sm" className="bg-fitness-primary hover:bg-fitness-secondary">
+                <Plus className="w-4 h-4 mr-2" />
+                Thêm testimonial
+              </Button>
+            </div>
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="border p-4 rounded-lg space-y-2">
-                <h4 className="font-medium">Testimonial {index + 1}</h4>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tên khách hàng</label>
-                  <Input
-                    value={testimonial.name}
-                    onChange={(e) => updateTestimonial(index, 'name', e.target.value)}
-                    placeholder="Tên khách hàng"
-                  />
+              <div key={index} className="border p-4 rounded-lg space-y-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-medium">Testimonial {index + 1}</h4>
+                  {testimonials.length > 1 && (
+                    <Button
+                      onClick={() => removeTestimonial(index)}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nội dung</label>
-                  <Textarea
-                    value={testimonial.content}
-                    onChange={(e) => updateTestimonial(index, 'content', e.target.value)}
-                    placeholder="Nội dung testimonial"
-                    rows={3}
-                  />
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Tên khách hàng</label>
+                      <Input
+                        value={testimonial.name}
+                        onChange={(e) => updateTestimonial(index, 'name', e.target.value)}
+                        placeholder="Tên khách hàng"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Nội dung</label>
+                      <Textarea
+                        value={testimonial.content}
+                        onChange={(e) => updateTestimonial(index, 'content', e.target.value)}
+                        placeholder="Nội dung testimonial"
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium">Hình ảnh</label>
+                    <div className="flex flex-col items-center space-y-2">
+                      {testimonial.image && (
+                        <img
+                          src={testimonial.image}
+                          alt="Preview"
+                          className="w-20 h-20 rounded-full object-cover"
+                        />
+                      )}
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(index, e)}
+                          className="hidden"
+                        />
+                        <Button type="button" variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </TabsContent>
 
           <TabsContent value="videos" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Video hướng dẫn</h3>
+              <Button onClick={addVideo} size="sm" className="bg-fitness-primary hover:bg-fitness-secondary">
+                <Plus className="w-4 h-4 mr-2" />
+                Thêm video
+              </Button>
+            </div>
             {videos.map((video, index) => (
               <div key={index} className="border p-4 rounded-lg space-y-2">
-                <h4 className="font-medium">Video {index + 1}</h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="font-medium">Video {index + 1}</h4>
+                  {videos.length > 1 && (
+                    <Button
+                      onClick={() => removeVideo(index)}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Tiêu đề video</label>
                   <Input
@@ -203,6 +322,9 @@ export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
                     onChange={(e) => updateVideo(index, 'videoId', e.target.value)}
                     placeholder="dQw4w9WgXcQ"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Ví dụ: với URL https://www.youtube.com/watch?v=dQw4w9WgXcQ thì Video ID là "dQw4w9WgXcQ"
+                  </p>
                 </div>
               </div>
             ))}
