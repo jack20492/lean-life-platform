@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, FileText, Dumbbell, Apple, Plus } from 'lucide-react';
+import { Users, FileText, Dumbbell, Apple, Plus, Home } from 'lucide-react';
 import { CreateAccountModal } from '@/components/admin/CreateAccountModal';
 import { CreatePostModal } from '@/components/admin/CreatePostModal';
 import { AssignWorkoutModal } from '@/components/admin/AssignWorkoutModal';
 import { CreateMealPlanModal } from '@/components/admin/CreateMealPlanModal';
+import { HomepageContentModal } from '@/components/admin/HomepageContentModal';
 
 const AdminDashboard = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -49,11 +49,12 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="accounts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="accounts">Tài khoản</TabsTrigger>
             <TabsTrigger value="posts">Bài viết</TabsTrigger>
             <TabsTrigger value="workouts">Bài tập</TabsTrigger>
             <TabsTrigger value="meals">Meal Plans</TabsTrigger>
+            <TabsTrigger value="homepage">Trang chủ</TabsTrigger>
           </TabsList>
 
           {/* Accounts Tab */}
@@ -177,6 +178,45 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Homepage Content Tab */}
+          <TabsContent value="homepage" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Quản lý nội dung trang chủ</h2>
+              <Button 
+                onClick={() => setActiveModal('homepage-content')}
+                className="bg-fitness-primary hover:bg-fitness-secondary"
+              >
+                <Home className="w-4 h-4 mr-2" />
+                Chỉnh sửa trang chủ
+              </Button>
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Hero Section</h4>
+                      <p className="text-sm text-gray-600">Tiêu đề chính và mô tả giới thiệu</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Phần giới thiệu</h4>
+                      <p className="text-sm text-gray-600">Thông tin về PT và thống kê</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Testimonials</h4>
+                      <p className="text-sm text-gray-600">Phản hồi từ khách hàng</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Video hướng dẫn</h4>
+                      <p className="text-sm text-gray-600">Video từ YouTube</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -192,6 +232,9 @@ const AdminDashboard = () => {
       )}
       {activeModal === 'create-meal-plan' && (
         <CreateMealPlanModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'homepage-content' && (
+        <HomepageContentModal onClose={() => setActiveModal(null)} />
       )}
     </div>
   );

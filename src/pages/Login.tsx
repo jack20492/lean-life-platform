@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -107,15 +107,6 @@ const Login = () => {
                   {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                 </Button>
               </form>
-
-              <div className="mt-6 text-center">
-                <p className="text-gray-600">
-                  Chưa có tài khoản?{' '}
-                  <Link to="/register" className="text-fitness-primary hover:underline">
-                    Đăng ký ngay
-                  </Link>
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>

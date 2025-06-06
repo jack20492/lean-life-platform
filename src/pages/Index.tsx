@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -57,14 +56,9 @@ const Index = () => {
             Hơn 5 năm kinh nghiệm trong việc giúp khách hàng đạt được mục tiêu fitness. 
             Chương trình tập luyện và dinh dưỡng được cá nhân hóa cho từng người.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button size="lg" className="bg-white text-fitness-primary hover:bg-gray-100 px-8 py-3">
-                Bắt đầu ngay
-              </Button>
-            </Link>
+          <div className="flex justify-center">
             <Link to="/login">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-fitness-primary px-8 py-3">
+              <Button size="lg" className="bg-white text-fitness-primary hover:bg-gray-100 px-8 py-3">
                 Đăng nhập
               </Button>
             </Link>
@@ -210,11 +204,11 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Sẵn sàng bắt đầu hành trình fitness?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Đăng ký ngay để nhận tư vấn miễn phí và bắt đầu chương trình tập luyện của bạn!
+            Liên hệ với tôi để nhận tư vấn miễn phí và bắt đầu chương trình tập luyện của bạn!
           </p>
-          <Link to="/register">
+          <Link to="/login">
             <Button size="lg" className="bg-white text-fitness-primary hover:bg-gray-100 px-8 py-3">
-              Đăng ký ngay
+              Đăng nhập
             </Button>
           </Link>
         </div>

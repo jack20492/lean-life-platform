@@ -27,16 +27,9 @@ export function Header() {
             Trang chủ
           </Link>
           {!user && (
-            <>
-              <Link to="/login" className="text-gray-600 hover:text-fitness-primary transition-colors">
-                Đăng nhập
-              </Link>
-              <Link to="/register">
-                <Button className="bg-fitness-primary hover:bg-fitness-secondary">
-                  Đăng ký
-                </Button>
-              </Link>
-            </>
+            <Link to="/login" className="text-gray-600 hover:text-fitness-primary transition-colors">
+              Đăng nhập
+            </Link>
           )}
         </nav>
 
