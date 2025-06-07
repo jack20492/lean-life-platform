@@ -1,9 +1,12 @@
+
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, FileText, Dumbbell, Apple, Plus, Home } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Users, FileText, Dumbbell, Apple, Plus, Home, Edit, Minus } from 'lucide-react';
 import { CreateAccountModal } from '@/components/admin/CreateAccountModal';
 import { CreatePostModal } from '@/components/admin/CreatePostModal';
 import { AssignWorkoutModal } from '@/components/admin/AssignWorkoutModal';
@@ -13,8 +16,50 @@ import { HomepageContentModal } from '@/components/admin/HomepageContentModal';
 const AdminDashboard = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
+  // Mock data for clients
+  const [clients, setClients] = useState([
+    {
+      id: 1,
+      name: 'Nguyễn Văn A',
+      email: 'client1@example.com',
+      workoutPlan: 'Giáo án giảm cân',
+      startDate: '2024-06-01',
+      totalSessions: 12,
+      sessionsPerWeek: 3,
+      sessionsCompleted: 6
+    },
+    {
+      id: 2,
+      name: 'Trần Thị B',
+      email: 'client2@example.com',
+      workoutPlan: 'Giáo án tăng cơ',
+      startDate: '2024-05-15',
+      totalSessions: 16,
+      sessionsPerWeek: 4,
+      sessionsCompleted: 10
+    }
+  ]);
+
+  const calculateRemainingDays = (startDate: string, totalSessions: number, sessionsPerWeek: number, sessionsCompleted: number) => {
+    const start = new Date(startDate);
+    const today = new Date();
+    const daysDiff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const weeksElapsed = Math.floor(daysDiff / 7);
+    const expectedSessions = Math.min(weeksElapsed * sessionsPerWeek, totalSessions);
+    const remainingSessions = totalSessions - Math.max(sessionsCompleted, expectedSessions);
+    return Math.max(0, remainingSessions);
+  };
+
+  const updateTotalSessions = (clientId: number, change: number) => {
+    setClients(clients.map(client => 
+      client.id === clientId 
+        ? { ...client, totalSessions: Math.max(1, client.totalSessions + change) }
+        : client
+    ));
+  };
+
   const stats = [
-    { title: 'Tổng khách hàng', value: '24', icon: Users, color: 'text-blue-600' },
+    { title: 'Tổng khách hàng', value: clients.length.toString(), icon: Users, color: 'text-blue-600' },
     { title: 'Bài viết', value: '12', icon: FileText, color: 'text-green-600' },
     { title: 'Bài tập active', value: '36', icon: Dumbbell, color: 'text-purple-600' },
     { title: 'Meal plans', value: '18', icon: Apple, color: 'text-orange-600' }
@@ -60,7 +105,7 @@ const AdminDashboard = () => {
           {/* Accounts Tab */}
           <TabsContent value="accounts" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Quản lý tài khoản</h2>
+              <h2 className="text-xl font-semibold">Quản lý khách hàng</h2>
               <Button 
                 onClick={() => setActiveModal('create-account')}
                 className="bg-fitness-primary hover:bg-fitness-secondary"
@@ -72,22 +117,61 @@ const AdminDashboard = () => {
             
             <Card>
               <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">Nguyễn Văn A</h4>
-                      <p className="text-sm text-gray-600">client@example.com - Khách hàng</p>
-                    </div>
-                    <Button variant="outline" size="sm">Chỉnh sửa</Button>
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">Admin PT</h4>
-                      <p className="text-sm text-gray-600">admin@fitness.com - Admin</p>
-                    </div>
-                    <Button variant="outline" size="sm">Chỉnh sửa</Button>
-                  </div>
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tên khách hàng</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Giáo án</TableHead>
+                      <TableHead>Ngày bắt đầu</TableHead>
+                      <TableHead>Tổng số buổi PT</TableHead>
+                      <TableHead>Buổi/tuần</TableHead>
+                      <TableHead>Số buổi còn lại</TableHead>
+                      <TableHead>Thao tác</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {clients.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">{client.name}</TableCell>
+                        <TableCell>{client.email}</TableCell>
+                        <TableCell>{client.workoutPlan}</TableCell>
+                        <TableCell>{new Date(client.startDate).toLocaleDateString('vi-VN')}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => updateTotalSessions(client.id, -1)}
+                              size="sm"
+                              variant="outline"
+                              className="h-6 w-6 p-0"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </Button>
+                            <span className="min-w-[2rem] text-center">{client.totalSessions}</span>
+                            <Button
+                              onClick={() => updateTotalSessions(client.id, 1)}
+                              size="sm"
+                              variant="outline"
+                              className="h-6 w-6 p-0"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>{client.sessionsPerWeek}</TableCell>
+                        <TableCell className="font-semibold text-blue-600">
+                          {calculateRemainingDays(client.startDate, client.totalSessions, client.sessionsPerWeek, client.sessionsCompleted)}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm">
+                            <Edit className="w-3 h-3 mr-1" />
+                            Sửa
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
