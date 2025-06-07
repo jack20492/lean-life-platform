@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Trash2 } from 'lucide-react';
 
 interface AssignWorkoutModalProps {
   onClose: () => void;
@@ -28,11 +27,28 @@ interface DayWorkout {
   exercises: Exercise[];
 }
 
+interface WorkoutProgram {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export function AssignWorkoutModal({ onClose }: AssignWorkoutModalProps) {
   const [formData, setFormData] = useState({
     clientId: '',
     weekNumber: 1,
+    programName: '',
   });
+
+  // Mock workout programs
+  const [workoutPrograms, setWorkoutPrograms] = useState<WorkoutProgram[]>([
+    { id: '1', name: 'Giáo án giảm cân', description: 'Tập trung vào cardio và giảm mỡ' },
+    { id: '2', name: 'Giáo án tăng cơ', description: 'Tập trung vào tăng khối lượng cơ bắp' },
+    { id: '3', name: 'Giáo án siết cơ', description: 'Tập trung vào định hình và siết cơ' },
+  ]);
+
+  const [newProgramName, setNewProgramName] = useState('');
+  const [showAddProgram, setShowAddProgram] = useState(false);
 
   const daysOfWeek = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
   
@@ -45,6 +61,35 @@ export function AssignWorkoutModal({ onClose }: AssignWorkoutModalProps) {
   );
 
   const { toast } = useToast();
+
+  const addWorkoutProgram = () => {
+    if (newProgramName.trim()) {
+      const newProgram: WorkoutProgram = {
+        id: Date.now().toString(),
+        name: newProgramName.trim(),
+        description: 'Giáo án tùy chỉnh'
+      };
+      setWorkoutPrograms([...workoutPrograms, newProgram]);
+      setFormData({...formData, programName: newProgram.name});
+      setNewProgramName('');
+      setShowAddProgram(false);
+      toast({
+        title: "Thêm giáo án thành công!",
+        description: `Đã thêm giáo án: ${newProgram.name}`,
+      });
+    }
+  };
+
+  const deleteWorkoutProgram = (programId: string) => {
+    setWorkoutPrograms(workoutPrograms.filter(p => p.id !== programId));
+    if (formData.programName === workoutPrograms.find(p => p.id === programId)?.name) {
+      setFormData({...formData, programName: ''});
+    }
+    toast({
+      title: "Xóa giáo án thành công!",
+      description: "Giáo án đã được xóa khỏi danh sách.",
+    });
+  };
 
   const toggleOffDay = (dayIndex: number) => {
     const updated = [...weeklyWorkout];
@@ -95,9 +140,18 @@ export function AssignWorkoutModal({ onClose }: AssignWorkoutModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.programName) {
+      toast({
+        title: "Lỗi!",
+        description: "Vui lòng chọn hoặc tạo giáo án.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     toast({
       title: "Assign bài tập thành công!",
-      description: `Đã giao bài tập tuần ${formData.weekNumber} cho khách hàng.`,
+      description: `Đã giao bài tập tuần ${formData.weekNumber} (${formData.programName}) cho khách hàng.`,
     });
     
     onClose();
@@ -111,7 +165,7 @@ export function AssignWorkoutModal({ onClose }: AssignWorkoutModalProps) {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Khách hàng</label>
               <Select value={formData.clientId} onValueChange={(value) => setFormData({...formData, clientId: value})}>
@@ -135,6 +189,78 @@ export function AssignWorkoutModal({ onClose }: AssignWorkoutModalProps) {
                 min="1"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Giáo án</label>
+              <div className="flex gap-2">
+                <Select value={formData.programName} onValueChange={(value) => setFormData({...formData, programName: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn giáo án" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workoutPrograms.map((program) => (
+                      <SelectItem key={program.id} value={program.name}>
+                        {program.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  type="button" 
+                  onClick={() => setShowAddProgram(!showAddProgram)}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {showAddProgram && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-2">Tên giáo án mới</label>
+                    <Input
+                      value={newProgramName}
+                      onChange={(e) => setNewProgramName(e.target.value)}
+                      placeholder="VD: Giáo án tăng cân"
+                    />
+                  </div>
+                  <Button type="button" onClick={addWorkoutProgram} size="sm">
+                    Thêm
+                  </Button>
+                  <Button type="button" onClick={() => setShowAddProgram(false)} variant="outline" size="sm">
+                    Hủy
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div>
+            <h4 className="text-sm font-medium mb-2">Quản lý giáo án</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {workoutPrograms.map((program) => (
+                <div key={program.id} className="flex items-center justify-between p-2 border rounded">
+                  <div>
+                    <span className="font-medium text-sm">{program.name}</span>
+                    <p className="text-xs text-gray-500">{program.description}</p>
+                  </div>
+                  <Button 
+                    type="button" 
+                    onClick={() => deleteWorkoutProgram(program.id)}
+                    variant="outline" 
+                    size="sm"
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
             </div>
           </div>
           

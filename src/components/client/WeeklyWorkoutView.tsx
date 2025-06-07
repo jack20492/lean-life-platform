@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Minus, BookOpen } from 'lucide-react';
+import { ExerciseTimer } from './ExerciseTimer';
 
 interface ExerciseSet {
   reps: number;
@@ -31,6 +32,9 @@ interface WeeklyWorkoutViewProps {
 
 export function WeeklyWorkoutView({ currentWeek }: WeeklyWorkoutViewProps) {
   const daysOfWeek = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+  
+  // Current workout program name
+  const currentProgramName = 'Giáo án giảm cân';
   
   // Mock data with previous week comparison
   const [weeklyWorkout, setWeeklyWorkout] = useState<DayWorkout[]>([
@@ -75,6 +79,8 @@ export function WeeklyWorkoutView({ currentWeek }: WeeklyWorkoutViewProps) {
     }
   ]);
 
+  const [activeTimers, setActiveTimers] = useState<{[key: string]: boolean}>({});
+
   const updateSetData = (dayIndex: number, exerciseIndex: number, setIndex: number, field: 'reality' | 'weight', value: number) => {
     const updated = [...weeklyWorkout];
     const set = updated[dayIndex].exercises[exerciseIndex].sets[setIndex];
@@ -97,6 +103,14 @@ export function WeeklyWorkoutView({ currentWeek }: WeeklyWorkoutViewProps) {
     return <Minus className="w-4 h-4" />;
   };
 
+  const toggleTimer = (exerciseName: string, setIndex: number) => {
+    const timerKey = `${exerciseName}-${setIndex}`;
+    setActiveTimers(prev => ({
+      ...prev,
+      [timerKey]: !prev[timerKey]
+    }));
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -104,6 +118,10 @@ export function WeeklyWorkoutView({ currentWeek }: WeeklyWorkoutViewProps) {
           <Calendar className="w-5 h-5" />
           Bài tập tuần {currentWeek}
         </CardTitle>
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <BookOpen className="w-4 h-4" />
+          <span>Giáo án: {currentProgramName}</span>
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="0" className="w-full">
@@ -141,52 +159,78 @@ export function WeeklyWorkoutView({ currentWeek }: WeeklyWorkoutViewProps) {
                                 <th className="text-left p-2">Tạ (kg)</th>
                                 <th className="text-left p-2">Volume</th>
                                 <th className="text-left p-2">So sánh</th>
+                                <th className="text-left p-2">Timer</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {exercise.sets.map((set, setIndex) => (
-                                <tr key={setIndex} className="border-b">
-                                  <td className="p-2">{setIndex + 1}</td>
-                                  <td className="p-2">{set.reps}</td>
-                                  <td className="p-2">
-                                    <Input
-                                      type="number"
-                                      value={set.reality}
-                                      onChange={(e) => updateSetData(dayIndex, exerciseIndex, setIndex, 'reality', parseInt(e.target.value))}
-                                      min="0"
-                                      className="w-16 h-8 text-sm"
-                                    />
-                                  </td>
-                                  <td className="p-2">
-                                    <Input
-                                      type="number"
-                                      value={set.weight}
-                                      onChange={(e) => updateSetData(dayIndex, exerciseIndex, setIndex, 'weight', parseFloat(e.target.value))}
-                                      min="0"
-                                      step="0.5"
-                                      className="w-20 h-8 text-sm"
-                                    />
-                                  </td>
-                                  <td className="p-2">
-                                    <span className={`px-2 py-1 rounded text-sm font-medium ${getVolumeColor(set.volume, set.previousWeekVolume)}`}>
-                                      {set.volume}
-                                    </span>
-                                  </td>
-                                  <td className="p-2">
-                                    <div className="flex items-center gap-1">
-                                      {getVolumeIcon(set.volume, set.previousWeekVolume)}
-                                      {set.previousWeekVolume && (
-                                        <span className="text-xs text-gray-500">
-                                          {set.previousWeekVolume}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
+                              {exercise.sets.map((set, setIndex) => {
+                                const timerKey = `${exercise.name}-${setIndex}`;
+                                return (
+                                  <tr key={setIndex} className="border-b">
+                                    <td className="p-2">{setIndex + 1}</td>
+                                    <td className="p-2">{set.reps}</td>
+                                    <td className="p-2">
+                                      <Input
+                                        type="number"
+                                        value={set.reality}
+                                        onChange={(e) => updateSetData(dayIndex, exerciseIndex, setIndex, 'reality', parseInt(e.target.value))}
+                                        min="0"
+                                        className="w-16 h-8 text-sm"
+                                      />
+                                    </td>
+                                    <td className="p-2">
+                                      <Input
+                                        type="number"
+                                        value={set.weight}
+                                        onChange={(e) => updateSetData(dayIndex, exerciseIndex, setIndex, 'weight', parseFloat(e.target.value))}
+                                        min="0"
+                                        step="0.5"
+                                        className="w-20 h-8 text-sm"
+                                      />
+                                    </td>
+                                    <td className="p-2">
+                                      <span className={`px-2 py-1 rounded text-sm font-medium ${getVolumeColor(set.volume, set.previousWeekVolume)}`}>
+                                        {set.volume}
+                                      </span>
+                                    </td>
+                                    <td className="p-2">
+                                      <div className="flex items-center gap-1">
+                                        {getVolumeIcon(set.volume, set.previousWeekVolume)}
+                                        {set.previousWeekVolume && (
+                                          <span className="text-xs text-gray-500">
+                                            {set.previousWeekVolume}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="p-2">
+                                      <Button
+                                        onClick={() => toggleTimer(exercise.name, setIndex)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-xs px-2 py-1"
+                                      >
+                                        {activeTimers[timerKey] ? 'Ẩn' : 'Timer'}
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
+                        
+                        {/* Show active timers */}
+                        {exercise.sets.map((set, setIndex) => {
+                          const timerKey = `${exercise.name}-${setIndex}`;
+                          return activeTimers[timerKey] && (
+                            <ExerciseTimer 
+                              key={timerKey}
+                              exerciseName={exercise.name} 
+                              setNumber={setIndex + 1} 
+                            />
+                          );
+                        })}
                       </div>
                     ))}
                   </div>
