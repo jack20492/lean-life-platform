@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Users, Award, Play, Star } from 'lucide-react';
+import { Dumbbell, Users, Award, Play, Star, Facebook, Phone, MessageCircle } from 'lucide-react';
 
 const Index = () => {
   const testimonials = [
@@ -41,6 +42,12 @@ const Index = () => {
       thumbnail: "/placeholder.svg"
     }
   ];
+
+  const contactInfo = {
+    facebook: "https://facebook.com/phinguyen.pt",
+    zalo: "0987654321",
+    phone: "0987654321"
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -199,6 +206,59 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Liên hệ với tôi</h2>
+          <div className="max-w-2xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card className="text-center hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <Facebook className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Facebook</h3>
+                  <a 
+                    href={contactInfo.facebook} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Phi Nguyễn PT
+                  </a>
+                </CardContent>
+              </Card>
+              
+              <Card className="text-center hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <MessageCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Zalo</h3>
+                  <a 
+                    href={`https://zalo.me/${contactInfo.zalo}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:underline"
+                  >
+                    {contactInfo.zalo}
+                  </a>
+                </CardContent>
+              </Card>
+              
+              <Card className="text-center hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <Phone className="w-12 h-12 text-fitness-primary mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Điện thoại</h3>
+                  <a 
+                    href={`tel:${contactInfo.phone}`}
+                    className="text-fitness-primary hover:underline"
+                  >
+                    {contactInfo.phone}
+                  </a>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 bg-fitness-primary text-white">
         <div className="container mx-auto px-4 text-center">
@@ -219,9 +279,9 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Dumbbell className="w-6 h-6" />
-            <span className="text-xl font-bold">FitnessPT</span>
+            <span className="text-xl font-bold">Phi Nguyễn Personal Trainer</span>
           </div>
-          <p className="text-gray-400">© 2024 FitnessPT. All rights reserved.</p>
+          <p className="text-gray-400">© 2024 Phi Nguyễn Personal Trainer. All rights reserved.</p>
         </div>
       </footer>
     </div>

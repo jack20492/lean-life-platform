@@ -23,6 +23,12 @@ interface Video {
   videoId: string;
 }
 
+interface ContactInfo {
+  facebook: string;
+  zalo: string;
+  phone: string;
+}
+
 export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
   const [heroContent, setHeroContent] = useState({
     title: 'Personal Trainer Chuyên Nghiệp',
@@ -69,6 +75,12 @@ export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
       videoId: 'dQw4w9WgXcQ'
     }
   ]);
+
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({
+    facebook: 'https://facebook.com/phinguyen.pt',
+    zalo: '0987654321',
+    phone: '0987654321'
+  });
 
   const { toast } = useToast();
 
@@ -135,11 +147,12 @@ export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
         </DialogHeader>
         
         <Tabs defaultValue="hero" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="hero">Hero Section</TabsTrigger>
             <TabsTrigger value="about">Giới thiệu</TabsTrigger>
             <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
+            <TabsTrigger value="contact">Liên hệ</TabsTrigger>
           </TabsList>
 
           <TabsContent value="hero" className="space-y-4">
@@ -328,6 +341,36 @@ export function HomepageContentModal({ onClose }: HomepageContentModalProps) {
                 </div>
               </div>
             ))}
+          </TabsContent>
+
+          <TabsContent value="contact" className="space-y-4">
+            <h3 className="text-lg font-medium">Thông tin liên hệ</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Facebook URL</label>
+                <Input
+                  value={contactInfo.facebook}
+                  onChange={(e) => setContactInfo({...contactInfo, facebook: e.target.value})}
+                  placeholder="https://facebook.com/phinguyen.pt"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Số Zalo</label>
+                <Input
+                  value={contactInfo.zalo}
+                  onChange={(e) => setContactInfo({...contactInfo, zalo: e.target.value})}
+                  placeholder="0987654321"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Số điện thoại</label>
+                <Input
+                  value={contactInfo.phone}
+                  onChange={(e) => setContactInfo({...contactInfo, phone: e.target.value})}
+                  placeholder="0987654321"
+                />
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
         

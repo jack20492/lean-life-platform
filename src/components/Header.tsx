@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, LogOut, Home, Dumbbell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dumbbell, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
-export function Header() {
+export const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -15,51 +15,38 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2 text-fitness-primary font-bold text-xl">
-          <Dumbbell className="w-6 h-6" />
-          <span>FitnessPT</span>
-        </Link>
-
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-gray-600 hover:text-fitness-primary transition-colors">
-            Trang chủ
+    <header className="bg-white shadow-sm border-b">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center space-x-2">
+            <Dumbbell className="w-8 h-8 text-fitness-primary" />
+            <span className="text-xl font-bold text-gray-800">Phi Nguyễn Personal Trainer</span>
           </Link>
-          {!user && (
-            <Link to="/login" className="text-gray-600 hover:text-fitness-primary transition-colors">
-              Đăng nhập
-            </Link>
-          )}
-        </nav>
-
-        {user && (
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-gray-700">
-              <User className="w-4 h-4" />
-              <span>{user.name}</span>
-            </div>
-            {user.role === 'admin' && (
-              <Link to="/admin">
-                <Button variant="outline" size="sm">
-                  Admin Dashboard
+          
+          <nav className="flex items-center space-x-4">
+            {user ? (
+              <>
+                <span className="text-gray-600">Xin chào, {user.name}</span>
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Đăng xuất</span>
+                </Button>
+              </>
+            ) : (
+              <Link to="/login">
+                <Button className="bg-fitness-primary hover:bg-fitness-secondary">
+                  Đăng nhập
                 </Button>
               </Link>
             )}
-            {user.role === 'client' && (
-              <Link to="/client">
-                <Button variant="outline" size="sm">
-                  <Home className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-            )}
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
+          </nav>
+        </div>
       </div>
     </header>
   );
-}
+};
