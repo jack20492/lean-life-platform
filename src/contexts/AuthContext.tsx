@@ -48,13 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Small delay to ensure profile is created by trigger
           setTimeout(async () => {
             try {
-              // Fetch user profile from our profiles table
+              // Fetch user profile from our profiles table (without client_profiles join)
               const { data: profile, error } = await (supabase as any)
                 .from('profiles')
-                .select(`
-                  *,
-                  client_profiles (*)
-                `)
+                .select('*')
                 .eq('id', session.user.id)
                 .single();
 
@@ -75,10 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     // Retry fetching the profile
                     const { data: newProfile } = await (supabase as any)
                       .from('profiles')
-                      .select(`
-                        *,
-                        client_profiles (*)
-                      `)
+                      .select('*')
                       .eq('id', session.user.id)
                       .single();
                     
@@ -111,29 +105,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const createUserProfile = (profile: any): UserProfile => {
-    const userProfile: UserProfile = {
+    return {
       id: profile.id,
       email: profile.email,
       name: profile.name,
       role: profile.role,
     };
-
-    if (profile.client_profiles && profile.client_profiles.length > 0) {
-      const clientProfile = profile.client_profiles[0];
-      userProfile.clientProfile = {
-        height: clientProfile.height || 0,
-        weight: clientProfile.weight || 0,
-        targetWeight: clientProfile.target_weight,
-        activityLevel: clientProfile.activity_level || 'moderate',
-        totalSessions: clientProfile.total_sessions || 0,
-        sessionsPerWeek: clientProfile.sessions_per_week || 3,
-        sessionsCompleted: clientProfile.sessions_completed || 0,
-        workoutPlan: clientProfile.workout_plan,
-        startDate: clientProfile.start_date || new Date().toISOString().split('T')[0],
-      };
-    }
-
-    return userProfile;
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
