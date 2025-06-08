@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -12,33 +11,14 @@ import { CreatePostModal } from '@/components/admin/CreatePostModal';
 import { AssignWorkoutModal } from '@/components/admin/AssignWorkoutModal';
 import { CreateMealPlanModal } from '@/components/admin/CreateMealPlanModal';
 import { HomepageContentModal } from '@/components/admin/HomepageContentModal';
+import { useClients, useUpdateClientSessions } from '@/hooks/useClients';
+import { usePosts } from '@/hooks/usePosts';
 
 const AdminDashboard = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
-
-  // Mock data for clients
-  const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: 'Nguyễn Văn A',
-      email: 'client1@example.com',
-      workoutPlan: 'Giáo án giảm cân',
-      startDate: '2024-06-01',
-      totalSessions: 12,
-      sessionsPerWeek: 3,
-      sessionsCompleted: 6
-    },
-    {
-      id: 2,
-      name: 'Trần Thị B',
-      email: 'client2@example.com',
-      workoutPlan: 'Giáo án tăng cơ',
-      startDate: '2024-05-15',
-      totalSessions: 16,
-      sessionsPerWeek: 4,
-      sessionsCompleted: 10
-    }
-  ]);
+  const { data: clients = [], isLoading: clientsLoading } = useClients();
+  const { data: posts = [] } = usePosts();
+  const updateClientSessions = useUpdateClientSessions();
 
   const calculateRemainingDays = (startDate: string, totalSessions: number, sessionsPerWeek: number, sessionsCompleted: number) => {
     const start = new Date(startDate);
@@ -50,17 +30,14 @@ const AdminDashboard = () => {
     return Math.max(0, remainingSessions);
   };
 
-  const updateTotalSessions = (clientId: number, change: number) => {
-    setClients(clients.map(client => 
-      client.id === clientId 
-        ? { ...client, totalSessions: Math.max(1, client.totalSessions + change) }
-        : client
-    ));
+  const updateTotalSessions = (clientId: string, change: number, currentSessions: number) => {
+    const newTotal = Math.max(1, currentSessions + change);
+    updateClientSessions.mutate({ clientId, totalSessions: newTotal });
   };
 
   const stats = [
     { title: 'Tổng khách hàng', value: clients.length.toString(), icon: Users, color: 'text-blue-600' },
-    { title: 'Bài viết', value: '12', icon: FileText, color: 'text-green-600' },
+    { title: 'Bài viết', value: posts.length.toString(), icon: FileText, color: 'text-green-600' },
     { title: 'Bài tập active', value: '36', icon: Dumbbell, color: 'text-purple-600' },
     { title: 'Meal plans', value: '18', icon: Apple, color: 'text-orange-600' }
   ];
@@ -117,61 +94,67 @@ const AdminDashboard = () => {
             
             <Card>
               <CardContent className="p-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Tên khách hàng</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Giáo án</TableHead>
-                      <TableHead>Ngày bắt đầu</TableHead>
-                      <TableHead>Tổng số buổi PT</TableHead>
-                      <TableHead>Buổi/tuần</TableHead>
-                      <TableHead>Số buổi còn lại</TableHead>
-                      <TableHead>Thao tác</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {clients.map((client) => (
-                      <TableRow key={client.id}>
-                        <TableCell className="font-medium">{client.name}</TableCell>
-                        <TableCell>{client.email}</TableCell>
-                        <TableCell>{client.workoutPlan}</TableCell>
-                        <TableCell>{new Date(client.startDate).toLocaleDateString('vi-VN')}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              onClick={() => updateTotalSessions(client.id, -1)}
-                              size="sm"
-                              variant="outline"
-                              className="h-6 w-6 p-0"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </Button>
-                            <span className="min-w-[2rem] text-center">{client.totalSessions}</span>
-                            <Button
-                              onClick={() => updateTotalSessions(client.id, 1)}
-                              size="sm"
-                              variant="outline"
-                              className="h-6 w-6 p-0"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>{client.sessionsPerWeek}</TableCell>
-                        <TableCell className="font-semibold text-blue-600">
-                          {calculateRemainingDays(client.startDate, client.totalSessions, client.sessionsPerWeek, client.sessionsCompleted)}
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm">
-                            <Edit className="w-3 h-3 mr-1" />
-                            Sửa
-                          </Button>
-                        </TableCell>
+                {clientsLoading ? (
+                  <div className="text-center py-8">Đang tải...</div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Tên khách hàng</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Giáo án</TableHead>
+                        <TableHead>Ngày bắt đầu</TableHead>
+                        <TableHead>Tổng số buổi PT</TableHead>
+                        <TableHead>Buổi/tuần</TableHead>
+                        <TableHead>Số buổi còn lại</TableHead>
+                        <TableHead>Thao tác</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {clients.map((client) => (
+                        <TableRow key={client.id}>
+                          <TableCell className="font-medium">{client.name}</TableCell>
+                          <TableCell>{client.email}</TableCell>
+                          <TableCell>{client.workoutPlan}</TableCell>
+                          <TableCell>{new Date(client.startDate).toLocaleDateString('vi-VN')}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                onClick={() => updateTotalSessions(client.id, -1, client.totalSessions)}
+                                size="sm"
+                                variant="outline"
+                                className="h-6 w-6 p-0"
+                                disabled={updateClientSessions.isPending}
+                              >
+                                <Minus className="w-3 h-3" />
+                              </Button>
+                              <span className="min-w-[2rem] text-center">{client.totalSessions}</span>
+                              <Button
+                                onClick={() => updateTotalSessions(client.id, 1, client.totalSessions)}
+                                size="sm"
+                                variant="outline"
+                                className="h-6 w-6 p-0"
+                                disabled={updateClientSessions.isPending}
+                              >
+                                <Plus className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>{client.sessionsPerWeek}</TableCell>
+                          <TableCell className="font-semibold text-blue-600">
+                            {calculateRemainingDays(client.startDate, client.totalSessions, client.sessionsPerWeek, client.sessionsCompleted)}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm">
+                              <Edit className="w-3 h-3 mr-1" />
+                              Sửa
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -192,16 +175,26 @@ const AdminDashboard = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">5 bài tập ngực hiệu quả nhất</h4>
-                      <p className="text-sm text-gray-600">Đăng ngày 15/12/2024</p>
+                  {posts.map((post) => (
+                    <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{post.title}</h4>
+                        <p className="text-sm text-gray-600">
+                          Đăng ngày {new Date(post.created_at).toLocaleDateString('vi-VN')}
+                          {post.author_name && ` - ${post.author_name}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">Sửa</Button>
+                        <Button variant="outline" size="sm">Xóa</Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">Sửa</Button>
-                      <Button variant="outline" size="sm">Xóa</Button>
+                  ))}
+                  {posts.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      Chưa có bài viết nào
                     </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -1,7 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
   email: string;
   name: string;
@@ -11,86 +13,126 @@ interface User {
     weight: number;
     targetWeight?: number;
     activityLevel: string;
+    totalSessions: number;
+    sessionsPerWeek: number;
+    sessionsCompleted: number;
+    workoutPlan?: string;
+    startDate: string;
   };
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
+  session: Session | null;
+  loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock database
-const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'admin@fitness.com',
-    name: 'Admin PT',
-    role: 'admin'
-  }
-];
-
-const mockCredentials = [
-  { email: 'admin@fitness.com', password: 'admin123' }
-];
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          // Fetch user profile from our profiles table
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select(`
+              *,
+              client_profiles (*)
+            `)
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile) {
+            const userProfile: UserProfile = {
+              id: profile.id,
+              email: profile.email,
+              name: profile.name,
+              role: profile.role,
+            };
+
+            if (profile.client_profiles && profile.client_profiles.length > 0) {
+              const clientProfile = profile.client_profiles[0];
+              userProfile.clientProfile = {
+                height: clientProfile.height || 0,
+                weight: clientProfile.weight || 0,
+                targetWeight: clientProfile.target_weight,
+                activityLevel: clientProfile.activity_level || 'moderate',
+                totalSessions: clientProfile.total_sessions || 0,
+                sessionsPerWeek: clientProfile.sessions_per_week || 3,
+                sessionsCompleted: clientProfile.sessions_completed || 0,
+                workoutPlan: clientProfile.workout_plan,
+                startDate: clientProfile.start_date || new Date().toISOString().split('T')[0],
+              };
+            }
+
+            setUser(userProfile);
+          }
+        } else {
+          setUser(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      // The onAuthStateChange will handle this
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const credential = mockCredentials.find(c => c.email === email && c.password === password);
-    if (credential) {
-      const foundUser = mockUsers.find(u => u.email === email);
-      if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem('currentUser', JSON.stringify(foundUser));
-        return true;
-      }
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      return !error;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('currentUser');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
-    // Check if user already exists
-    if (mockUsers.find(u => u.email === email)) {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+          emailRedirectTo: `${window.location.origin}/`
+        }
+      });
+      
+      return !error;
+    } catch (error) {
+      console.error('Register error:', error);
       return false;
     }
-
-    const newUser: User = {
-      id: Date.now().toString(),
-      email,
-      name,
-      role: 'client',
-      clientProfile: {
-        height: 0,
-        weight: 0,
-        activityLevel: 'moderate'
-      }
-    };
-
-    mockUsers.push(newUser);
-    mockCredentials.push({ email, password });
-    
-    return true;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, session, loading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
