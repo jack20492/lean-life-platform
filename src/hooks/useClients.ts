@@ -22,7 +22,7 @@ export function useClients() {
   return useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('profiles')
         .select(`
           *,
@@ -32,7 +32,7 @@ export function useClients() {
 
       if (error) throw error;
 
-      return data.map((profile): Client => {
+      return data.map((profile: any): Client => {
         const clientProfile = profile.client_profiles?.[0];
         return {
           id: profile.id,
@@ -59,7 +59,7 @@ export function useUpdateClientSessions() {
 
   return useMutation({
     mutationFn: async ({ clientId, totalSessions }: { clientId: string; totalSessions: number }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('client_profiles')
         .update({ total_sessions: totalSessions })
         .eq('user_id', clientId);

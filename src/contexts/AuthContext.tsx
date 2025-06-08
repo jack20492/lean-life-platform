@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (session?.user) {
           // Fetch user profile from our profiles table
-          const { data: profile } = await supabase
+          const { data: profile } = await (supabase as any)
             .from('profiles')
             .select(`
               *,

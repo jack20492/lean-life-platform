@@ -15,7 +15,7 @@ export function usePosts() {
   return useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('posts')
         .select(`
           *,
@@ -25,7 +25,7 @@ export function usePosts() {
 
       if (error) throw error;
 
-      return data.map((post): Post => ({
+      return data.map((post: any): Post => ({
         id: post.id,
         title: post.title,
         content: post.content,
@@ -45,7 +45,7 @@ export function useCreatePost() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('posts')
         .insert({
           title,
