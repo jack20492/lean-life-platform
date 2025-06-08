@@ -41,44 +41,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         
         if (session?.user) {
-          // Fetch user profile from our profiles table
-          const { data: profile } = await (supabase as any)
-            .from('profiles')
-            .select(`
-              *,
-              client_profiles (*)
-            `)
-            .eq('id', session.user.id)
-            .single();
+          // Small delay to ensure profile is created by trigger
+          setTimeout(async () => {
+            try {
+              // Fetch user profile from our profiles table
+              const { data: profile, error } = await (supabase as any)
+                .from('profiles')
+                .select(`
+                  *,
+                  client_profiles (*)
+                `)
+                .eq('id', session.user.id)
+                .single();
 
-          if (profile) {
-            const userProfile: UserProfile = {
-              id: profile.id,
-              email: profile.email,
-              name: profile.name,
-              role: profile.role,
-            };
-
-            if (profile.client_profiles && profile.client_profiles.length > 0) {
-              const clientProfile = profile.client_profiles[0];
-              userProfile.clientProfile = {
-                height: clientProfile.height || 0,
-                weight: clientProfile.weight || 0,
-                targetWeight: clientProfile.target_weight,
-                activityLevel: clientProfile.activity_level || 'moderate',
-                totalSessions: clientProfile.total_sessions || 0,
-                sessionsPerWeek: clientProfile.sessions_per_week || 3,
-                sessionsCompleted: clientProfile.sessions_completed || 0,
-                workoutPlan: clientProfile.workout_plan,
-                startDate: clientProfile.start_date || new Date().toISOString().split('T')[0],
-              };
+              if (error) {
+                console.error('Error fetching profile:', error);
+                // If profile doesn't exist, create it
+                if (error.code === 'PGRST116') {
+                  const { error: insertError } = await (supabase as any)
+                    .from('profiles')
+                    .insert({
+                      id: session.user.id,
+                      email: session.user.email,
+                      name: session.user.user_metadata?.name || session.user.email,
+                      role: session.user.email === 'admin@fitness.com' ? 'admin' : 'client'
+                    });
+                  
+                  if (!insertError) {
+                    // Retry fetching the profile
+                    const { data: newProfile } = await (supabase as any)
+                      .from('profiles')
+                      .select(`
+                        *,
+                        client_profiles (*)
+                      `)
+                      .eq('id', session.user.id)
+                      .single();
+                    
+                    if (newProfile) {
+                      setUser(createUserProfile(newProfile));
+                    }
+                  }
+                }
+              } else if (profile) {
+                setUser(createUserProfile(profile));
+              }
+            } catch (err) {
+              console.error('Error in auth state change:', err);
             }
-
-            setUser(userProfile);
-          }
+          }, 100);
         } else {
           setUser(null);
         }
@@ -95,6 +110,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const createUserProfile = (profile: any): UserProfile => {
+    const userProfile: UserProfile = {
+      id: profile.id,
+      email: profile.email,
+      name: profile.name,
+      role: profile.role,
+    };
+
+    if (profile.client_profiles && profile.client_profiles.length > 0) {
+      const clientProfile = profile.client_profiles[0];
+      userProfile.clientProfile = {
+        height: clientProfile.height || 0,
+        weight: clientProfile.weight || 0,
+        targetWeight: clientProfile.target_weight,
+        activityLevel: clientProfile.activity_level || 'moderate',
+        totalSessions: clientProfile.total_sessions || 0,
+        sessionsPerWeek: clientProfile.sessions_per_week || 3,
+        sessionsCompleted: clientProfile.sessions_completed || 0,
+        workoutPlan: clientProfile.workout_plan,
+        startDate: clientProfile.start_date || new Date().toISOString().split('T')[0],
+      };
+    }
+
+    return userProfile;
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -102,7 +143,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
       
-      return !error;
+      if (error) {
+        console.error('Login error:', error);
+        return false;
+      }
+      
+      return true;
     } catch (error) {
       console.error('Login error:', error);
       return false;
@@ -124,7 +170,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
       
-      return !error;
+      if (error) {
+        console.error('Register error:', error);
+        return false;
+      }
+      
+      return true;
     } catch (error) {
       console.error('Register error:', error);
       return false;
