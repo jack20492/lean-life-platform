@@ -6,10 +6,13 @@ import { Dumbbell, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const Header = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
+  console.log('Header render - user:', user, 'loading:', loading);
+
   const handleLogout = () => {
+    console.log('Logout button clicked');
     logout();
     navigate('/');
   };
@@ -24,7 +27,9 @@ export const Header = () => {
           </Link>
           
           <nav className="flex items-center space-x-4">
-            {user ? (
+            {loading ? (
+              <span className="text-gray-600">Đang tải...</span>
+            ) : user ? (
               <>
                 <span className="text-gray-600">Xin chào, {user.name}</span>
                 <Button 
